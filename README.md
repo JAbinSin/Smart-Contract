@@ -1,16 +1,20 @@
 # Smart-Contract
 
-This Solidity program demonstrates how to implement error handling mechanisms in smart contracts. It includes basic functionality for setting a value and performing division with custom error messages, helping developers understand how to use require, assert, and revert statements for input validation and contract logic.
+This Solidity program demonstrates error-handling mechanisms in a relatable scenario for college students. It models a Student Allowance Tracker to help students manage their monthly allowance and track spending. The contract utilizes require(), assert(), and revert() statements to validate inputs and ensure robust contract logic.
 
 ## Description
 
-This contract, written in Solidity, implements two primary functions: setting a value and performing division. It includes basic error handling to ensure:
+This contract, written in Solidity, provides the following functionality:
 
-* The value being set is greater than 0 and not the same as the previous value.
-* Division by zero is prevented.
-* Only values that are divisible by the denominator can be used in the division.
+* Track Monthly Allowance: Set and reset a fixed allowance for the month.
+* Spend Tracking: Record expenses and ensure the remaining balance is sufficient for any spending.
+* Remaining Allowance Calculation: Calculate how much allowance is left.
+* Error Handling:
+    * Prevents overspending.
+    * Validates allowance reset values.
+    * Ensures logical consistency after operations.   
 
-The contract also demonstrates how to handle custom error messages with require, assert, and revert, providing an essential foundation for creating more robust smart contracts.
+This contract demonstrates how to apply require(), assert(), and revert() for error handling in practical scenarios while making it relevant to a student's financial management.
 
 ## Getting Started
 
@@ -20,41 +24,66 @@ The contract also demonstrates how to handle custom error messages with require,
 
 2. Once you are on the Remix website, create a new file by clicking on the "+" icon in the left-hand sidebar. Save the file with a .sol extension (e.g., myToken.sol). Copy and paste the following code into the file:
 
-```javascript
+```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-contract ErrorHandlerContract {
-    uint public value;
+contract StudentAllowance {
+    uint public totalAllowance; // Total monthly allowance
+    uint public spentAmount; // Tracks how much has been spent
 
-    function setValue(uint _value) public {
-        require(_value > 0, "Value must be greater than 0.");
-        assert(_value != value);
-        value = _value;
+    constructor(uint _allowance) {
+        require(_allowance > 0, "Allowance must be greater than zero.");
+        totalAllowance = _allowance;
     }
 
-    function performDivision(uint _numerator, uint _denominator) public pure returns (uint) {
-      require(_denominator != 0, "Cannot divide by zero.");
+    // Spend a specified amount from the allowance
+    function spend(uint _amount) public {
+        require(_amount > 0, "Spend amount must be greater than zero.");
+        require(_amount <= getRemainingAllowance(), "Insufficient remaining allowance.");
 
-      if (_numerator % _denominator != 0) {
-         revert("Numerator must be divisible by denominator.");
-      }
-      
-      return _numerator / _denominator;
-   }
+        spentAmount += _amount;
+
+        // Ensure the spent amount does not exceed the total allowance
+        assert(spentAmount <= totalAllowance);
+    }
+
+    // View the remaining allowance
+    function getRemainingAllowance() public view returns (uint) {
+        return totalAllowance - spentAmount;
+    }
+
+    // Reset the allowance for a new month
+    function resetAllowance(uint _newAllowance) public {
+        if (_newAllowance <= 0) {
+            revert("New allowance must be greater than zero.");
+        }
+
+        totalAllowance = _newAllowance;
+        spentAmount = 0;
+    }
 }
 ```
 
-3. To compile the code, click on the "Solidity Compiler" tab in the left-hand sidebar. Make sure the compiler version is set to 0.8.28 or any compatible version, and then click "Compile myToken.sol.".
+3. Compile the Contract:
+    * Navigate to the Solidity Compiler tab.
+    * Ensure the compiler version is set to ^0.8.28 or compatible.
+    * Click Compile myToken.sol.
 
-4. Once the contract is compiled, deploy it by navigating to the Deploy & Run Transactions tab in the left sidebar. Select the ErrorHandlerContract from the dropdown and click Deploy.
+4. Deploy the Contract:
+   * Navigate to the Deploy & Run Transactions tab.
+   * Select StudentAllowance from the dropdown.
+   * Enter an initial allowance value (e.g., 100) in the constructor input and click Deploy.
 
-5. After deploying the contract, you'll see it under Deployed Contracts. You can now interact with the contract:
-   * Use the setValue function to set a new value, ensuring the value is greater than 0 and different from the previous value.
-   * Use the performDivision function to divide two numbers, making sure the numerator is divisible by the denominator and the denominator is not zero.
+5. Interact with the Contract:
+   * Use spend() to record expenses. Ensure the amount does not exceed the remaining allowance.
+   * Use getRemainingAllowance() to check how much is left.
+   * Use resetAllowance() to set a new allowance at the start of a month.
+
 ## Authors
 
 Metacrafter John Alvin R. Cruz
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE.md file for details
