@@ -1,22 +1,38 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-contract ErrorHandlerContract {
-    uint public value;
+contract StudentAllowance {
+    uint public totalAllowance; // Total monthly allowance
+    uint public spentAmount; // Tracks how much has been spent
 
-    function setValue(uint _value) public {
-        require(_value > 0, "Value must be greater than 0.");
-        assert(_value != value);
-        value = _value;
+    constructor(uint _allowance) {
+        require(_allowance > 0, "Allowance must be greater than zero.");
+        totalAllowance = _allowance;
     }
 
-    function performDivision(uint _numerator, uint _denominator) public pure returns (uint) {
-      require(_denominator != 0, "Cannot divide by zero.");
+    // Spend a specified amount from the allowance
+    function spend(uint _amount) public {
+        require(_amount > 0, "Spend amount must be greater than zero.");
+        require(_amount <= getRemainingAllowance(), "Insufficient remaining allowance.");
 
-      if (_numerator % _denominator != 0) {
-         revert("Numerator must be divisible by denominator.");
-      }
-      
-      return _numerator / _denominator;
-   }
+        spentAmount += _amount;
+
+        // Ensure the spent amount does not exceed the total allowance
+        assert(spentAmount <= totalAllowance);
+    }
+
+    // View the remaining allowance
+    function getRemainingAllowance() public view returns (uint) {
+        return totalAllowance - spentAmount;
+    }
+
+    // Reset the allowance for a new month
+    function resetAllowance(uint _newAllowance) public {
+        if (_newAllowance <= 0) {
+            revert("New allowance must be greater than zero.");
+        }
+
+        totalAllowance = _newAllowance;
+        spentAmount = 0;
+    }
 }
